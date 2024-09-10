@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,6 +13,7 @@ public class CardSystem : MonoBehaviour
 
     private int selectedSlotIndex = -1; 
     private bool isInventoryActive;
+    private Coroutine resetCoroutine;
     public GameObject inventoryPanel;
 
     void Start()
@@ -27,6 +29,24 @@ public class CardSystem : MonoBehaviour
         UpdateInventoryUI(); 
     }
 
+    void Update()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            UseFrontCard();
+        }
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            isInventoryActive = !isInventoryActive;
+            inventoryPanel.SetActive(isInventoryActive);
+        }
+
+        if (isInventoryActive)
+        {
+            CloseInventory();
+        } 
+    }
     public void UseFrontCard()
     {
         if (cardSlots.Count > 0)
@@ -38,6 +58,8 @@ public class CardSystem : MonoBehaviour
             {
                 ResetCards();
             }
+
+            RestartIdleTimer();
         }
     }
 
@@ -125,23 +147,19 @@ public class CardSystem : MonoBehaviour
         UpdateCardUI();
     }
 
-    void Update()
+    private void RestartIdleTimer()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (resetCoroutine != null)
         {
-            UseFrontCard();
+            StopCoroutine(resetCoroutine);  // Hentikan coroutine sebelumnya jika ada
         }
+        resetCoroutine = StartCoroutine(ResetAfterIdleTime());
+    }
 
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            isInventoryActive = !isInventoryActive;
-            inventoryPanel.SetActive(isInventoryActive);
-        }
-
-        if (isInventoryActive)
-        {
-            CloseInventory();
-        } 
+    private IEnumerator ResetAfterIdleTime()
+    {
+        yield return new WaitForSeconds(2f);  // Tunggu 2 detik
+        ResetCards();  // Reset kartu setelah idle
     }
 }
 
