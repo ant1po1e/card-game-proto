@@ -4,12 +4,15 @@ using UnityEngine.UI;
 
 public class CardSystem : MonoBehaviour
 {
-    public List<Card> cardSlots = new List<Card>(5);
+    public List<Card> cardSlots = new List<Card>(5);  
     private List<Card> originalCards = new List<Card>(5);
-    public List<Image> cardSlotUI = new List<Image>(5);
+    public List<Image> cardSlotUI = new List<Image>(5); 
+    public List<Image> inventorySlotUI = new List<Image>(5); 
     public List<Sprite> cardIcons = new List<Sprite>(5);
 
-    private int cardsUsed = 0;
+    private int selectedSlotIndex = -1; 
+    private bool isInventoryActive;
+    public GameObject inventoryPanel;
 
     void Start()
     {
@@ -21,6 +24,7 @@ public class CardSystem : MonoBehaviour
         }
 
         UpdateCardUI();
+        UpdateInventoryUI(); 
     }
 
     public void UseFrontCard()
@@ -28,7 +32,6 @@ public class CardSystem : MonoBehaviour
         if (cardSlots.Count > 0)
         {
             cardSlots.RemoveAt(0);
-            cardsUsed++;
             UpdateCardUI();
 
             if (cardSlots.Count == 0)
@@ -46,8 +49,6 @@ public class CardSystem : MonoBehaviour
         {
             cardSlots.Add(originalCard);
         }
-
-        cardsUsed = 0;
 
         UpdateCardUI();
     }
@@ -68,12 +69,79 @@ public class CardSystem : MonoBehaviour
         }
     }
 
+    public void UpdateInventoryUI()
+    {
+        for (int i = 0; i < inventorySlotUI.Count; i++)
+        {
+            if (i < originalCards.Count)
+            {
+                inventorySlotUI[i].sprite = originalCards[i].cardIcon;
+                inventorySlotUI[i].enabled = true;
+            }
+            else
+            {
+                inventorySlotUI[i].enabled = false;
+            }
+        }
+    }
+
+    public void OnSlotClicked(int slotIndex)
+    {
+        if (selectedSlotIndex == -1)
+        {
+            selectedSlotIndex = slotIndex;
+            HighlightSlot(slotIndex, true);  
+        }
+        else
+        {
+            if (selectedSlotIndex != slotIndex)
+            {
+                SwapCards(selectedSlotIndex, slotIndex);
+            }
+
+            HighlightSlot(selectedSlotIndex, false);
+            selectedSlotIndex = -1;
+        }
+    }
+
+    private void SwapCards(int index1, int index2)
+    {
+        Card temp = originalCards[index1];
+        originalCards[index1] = originalCards[index2];
+        originalCards[index2] = temp;
+        UpdateInventoryUI();
+    }
+
+    private void HighlightSlot(int slotIndex, bool highlight)
+    {
+        Color highlightColor = Color.yellow;  
+        inventorySlotUI[slotIndex].color = highlight ? highlightColor : Color.white;
+    }
+
+    public void CloseInventory()
+    {
+        cardSlots.Clear();
+        cardSlots.AddRange(originalCards);
+        UpdateCardUI();
+    }
+
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetMouseButtonDown(0))
         {
             UseFrontCard();
         }
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            isInventoryActive = !isInventoryActive;
+            inventoryPanel.SetActive(isInventoryActive);
+        }
+
+        if (isInventoryActive)
+        {
+            CloseInventory();
+        } 
     }
 }
 
