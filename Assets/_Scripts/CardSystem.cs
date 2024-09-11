@@ -5,28 +5,38 @@ using UnityEngine.UI;
 
 public class CardSystem : MonoBehaviour
 {
-    public List<Card> cardSlots = new List<Card>(5);  
+    [SerializeField] private List<CardData> cardDataList = new List<CardData>(5); 
+    public List<Card> cardSlots = new List<Card>(5);
     private List<Card> originalCards = new List<Card>(5);
-    public List<Image> cardSlotUI = new List<Image>(5); 
-    public List<Image> inventorySlotUI = new List<Image>(5); 
-    public List<Sprite> cardIcons = new List<Sprite>(5);
+    public List<Image> cardSlotUI = new List<Image>(5);
+    public List<Image> inventorySlotUI = new List<Image>(5);
 
-    private int selectedSlotIndex = -1; 
+    public CardData ultimateCardData; 
+    private Card ultimateCard;
+    public Image ultimateCardSlotUI;
+
+    private int selectedSlotIndex = -1;
     private bool isInventoryActive;
     private Coroutine resetCoroutine;
     public GameObject inventoryPanel;
 
     void Start()
     {
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < cardDataList.Count; i++)
         {
-            Card newCard = new Card("Card " + (i + 1), cardIcons[i]);
+            Card newCard = new Card(cardDataList[i]);
             cardSlots.Add(newCard);
-            originalCards.Add(newCard); 
+            originalCards.Add(newCard);
+        }
+
+        if (ultimateCardData != null)
+        {
+            ultimateCard = new Card(ultimateCardData);
+            UpdateUltimateCardUI();
         }
 
         UpdateCardUI();
-        UpdateInventoryUI(); 
+        UpdateInventoryUI();
     }
 
     void Update()
@@ -34,6 +44,11 @@ public class CardSystem : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             UseFrontCard();
+        }
+
+        if (Input.GetMouseButtonDown(1)) 
+        {
+            UseUltimateCard();
         }
 
         if (Input.GetKeyDown(KeyCode.Escape))
@@ -45,8 +60,9 @@ public class CardSystem : MonoBehaviour
         if (isInventoryActive)
         {
             CloseInventory();
-        } 
+        }
     }
+
     public void UseFrontCard()
     {
         if (cardSlots.Count > 0)
@@ -60,6 +76,40 @@ public class CardSystem : MonoBehaviour
             }
 
             RestartIdleTimer();
+        }
+    }
+
+    public void UseUltimateCard()
+    {
+        if (ultimateCard != null)
+        {
+            Debug.Log("Using ultimate card: " + ultimateCard.cardData.cardName);
+        }
+    }
+
+    public void AddCard(CardData newCardData)
+    {
+        Debug.Log("Attempting to add card: " + newCardData.cardName);
+
+        if (cardSlots.Count < 5)
+        {
+            Card newCard = new Card(newCardData);
+            cardSlots.Insert(0, newCard); 
+            UpdateCardUI();
+            Debug.Log("Card added to slot. Total slots: " + cardSlots.Count);
+        }
+        else
+        {
+            if (ultimateCard == null && ultimateCardData != null)
+            {
+                ultimateCard = new Card(newCardData);
+                UpdateUltimateCardUI();
+                Debug.Log("Ultimate card slot filled.");
+            }
+            else
+            {
+                Debug.Log("No available slots for new card.");
+            }
         }
     }
 
@@ -81,13 +131,26 @@ public class CardSystem : MonoBehaviour
         {
             if (i < cardSlots.Count)
             {
-                cardSlotUI[i].sprite = cardSlots[i].cardIcon;
-                cardSlotUI[i].enabled = true; 
+                cardSlotUI[i].sprite = cardSlots[i].cardData.cardIcon;
+                cardSlotUI[i].enabled = true;
             }
             else
             {
                 cardSlotUI[i].enabled = false;
             }
+        }
+    }
+
+    private void UpdateUltimateCardUI()
+    {
+        if (ultimateCard != null)
+        {
+            ultimateCardSlotUI.sprite = ultimateCard.cardData.cardIcon;
+            ultimateCardSlotUI.enabled = true;
+        }
+        else
+        {
+            ultimateCardSlotUI.enabled = false;
         }
     }
 
@@ -97,7 +160,7 @@ public class CardSystem : MonoBehaviour
         {
             if (i < originalCards.Count)
             {
-                inventorySlotUI[i].sprite = originalCards[i].cardIcon;
+                inventorySlotUI[i].sprite = originalCards[i].cardData.cardIcon;
                 inventorySlotUI[i].enabled = true;
             }
             else
@@ -112,7 +175,7 @@ public class CardSystem : MonoBehaviour
         if (selectedSlotIndex == -1)
         {
             selectedSlotIndex = slotIndex;
-            HighlightSlot(slotIndex, true);  
+            HighlightSlot(slotIndex, true);
         }
         else
         {
@@ -136,7 +199,7 @@ public class CardSystem : MonoBehaviour
 
     private void HighlightSlot(int slotIndex, bool highlight)
     {
-        Color highlightColor = Color.yellow;  
+        Color highlightColor = Color.yellow;
         inventorySlotUI[slotIndex].color = highlight ? highlightColor : Color.white;
     }
 
@@ -151,26 +214,25 @@ public class CardSystem : MonoBehaviour
     {
         if (resetCoroutine != null)
         {
-            StopCoroutine(resetCoroutine);  // Hentikan coroutine sebelumnya jika ada
+            StopCoroutine(resetCoroutine);
         }
         resetCoroutine = StartCoroutine(ResetAfterIdleTime());
     }
 
     private IEnumerator ResetAfterIdleTime()
     {
-        yield return new WaitForSeconds(2f);  // Tunggu 2 detik
-        ResetCards();  // Reset kartu setelah idle
+        yield return new WaitForSeconds(1f);
+        ResetCards();
     }
 }
 
+
 public class Card
 {
-    public string cardName;
-    public Sprite cardIcon;
+    public CardData cardData;
 
-    public Card(string name, Sprite icon)
+    public Card(CardData data)
     {
-        cardName = name;
-        cardIcon = icon;
+        cardData = data;
     }
 }
