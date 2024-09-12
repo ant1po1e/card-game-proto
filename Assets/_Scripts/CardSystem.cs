@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class CardSystem : MonoBehaviour
 {
-    [SerializeField] private List<CardData> cardDataList = new List<CardData>(5); 
+    [SerializeField] private List<CardData> cardDataList = new List<CardData>(5);
     public List<Card> cardSlots = new List<Card>(5);
     private List<Card> originalCards = new List<Card>(5);
     public List<Image> cardSlotUI = new List<Image>(5);
@@ -54,6 +54,7 @@ public class CardSystem : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             isInventoryActive = !isInventoryActive;
+            UpdateInventoryUI();
             inventoryPanel.SetActive(isInventoryActive);
         }
 
@@ -88,42 +89,47 @@ public class CardSystem : MonoBehaviour
     }
 
     public void AddCard(CardData newCardData)
-    {
-        Debug.Log("Attempting to add card: " + newCardData.cardName);
+{
+    Debug.Log("Attempting to add card: " + newCardData.cardName);
 
-        if (cardSlots.Count < 5)
+    if (cardSlots.Count < 5)
+    {
+        Card newCard = new Card(newCardData);
+        cardSlots.Insert(0, newCard);
+        cardDataList.Insert(0, newCardData); 
+        originalCards.Insert(0, newCard);  
+        UpdateCardUI();
+        Debug.Log("Card added to slot. Total slots: " + cardSlots.Count);
+    }
+    else
+    {
+        if (ultimateCard == null)
         {
-            Card newCard = new Card(newCardData);
-            cardSlots.Insert(0, newCard); 
-            UpdateCardUI();
-            Debug.Log("Card added to slot. Total slots: " + cardSlots.Count);
+            ultimateCard = new Card(newCardData);
+            ultimateCardData = newCardData;
+            UpdateUltimateCardUI();
+            Debug.Log("Ultimate card slot filled.");
         }
         else
         {
-            if (ultimateCard == null && ultimateCardData != null)
-            {
-                ultimateCard = new Card(newCardData);
-                UpdateUltimateCardUI();
-                Debug.Log("Ultimate card slot filled.");
-            }
-            else
-            {
-                Debug.Log("No available slots for new card.");
-            }
+            Debug.Log("No available slots for new card.");
         }
     }
+}
+
 
     private void ResetCards()
     {
-        cardSlots.Clear();
-
+        cardSlots.Clear(); 
+        
         foreach (Card originalCard in originalCards)
         {
-            cardSlots.Add(originalCard);
+            cardSlots.Add(originalCard);  
         }
 
-        UpdateCardUI();
+        UpdateCardUI(); 
     }
+
 
     private void UpdateCardUI()
     {
@@ -155,20 +161,20 @@ public class CardSystem : MonoBehaviour
     }
 
     public void UpdateInventoryUI()
+{
+    for (int i = 0; i < inventorySlotUI.Count; i++)
     {
-        for (int i = 0; i < inventorySlotUI.Count; i++)
+        if (i < originalCards.Count)
         {
-            if (i < originalCards.Count)
-            {
-                inventorySlotUI[i].sprite = originalCards[i].cardData.cardIcon;
-                inventorySlotUI[i].enabled = true;
-            }
-            else
-            {
-                inventorySlotUI[i].enabled = false;
-            }
+            inventorySlotUI[i].sprite = originalCards[i].cardData.cardIcon;
+            inventorySlotUI[i].enabled = true; 
+        }
+        else
+        {
+            inventorySlotUI[i].enabled = false; 
         }
     }
+}
 
     public void OnSlotClicked(int slotIndex)
     {
