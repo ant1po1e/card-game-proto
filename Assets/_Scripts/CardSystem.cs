@@ -89,33 +89,33 @@ public class CardSystem : MonoBehaviour
     }
 
     public void AddCard(CardData newCardData)
-{
-    Debug.Log("Attempting to add card: " + newCardData.cardName);
+    {
+        Debug.Log("Attempting to add card: " + newCardData.cardName);
 
-    if (cardSlots.Count < 5)
-    {
-        Card newCard = new Card(newCardData);
-        cardSlots.Insert(0, newCard);
-        cardDataList.Insert(0, newCardData); 
-        originalCards.Insert(0, newCard);  
-        UpdateCardUI();
-        Debug.Log("Card added to slot. Total slots: " + cardSlots.Count);
-    }
-    else
-    {
-        if (ultimateCard == null)
+        if (cardSlots.Count < 5)
         {
-            ultimateCard = new Card(newCardData);
-            ultimateCardData = newCardData;
-            UpdateUltimateCardUI();
-            Debug.Log("Ultimate card slot filled.");
+            Card newCard = new Card(newCardData);
+            cardSlots.Insert(0, newCard);
+            cardDataList.Insert(0, newCardData); 
+            originalCards.Insert(0, newCard);  
+            UpdateCardUI();
+            Debug.Log("Card added to slot. Total slots: " + cardSlots.Count);
         }
         else
         {
-            Debug.Log("No available slots for new card.");
+            if (ultimateCard == null)
+            {
+                ultimateCard = new Card(newCardData);
+                ultimateCardData = newCardData;
+                UpdateUltimateCardUI();
+                Debug.Log("Ultimate card slot filled.");
+            }
+            else
+            {
+                Debug.Log("No available slots for new card.");
+            }
         }
     }
-}
 
 
     private void ResetCards()
@@ -161,20 +161,20 @@ public class CardSystem : MonoBehaviour
     }
 
     public void UpdateInventoryUI()
-{
-    for (int i = 0; i < inventorySlotUI.Count; i++)
     {
-        if (i < originalCards.Count)
+        for (int i = 0; i < inventorySlotUI.Count; i++)
         {
-            inventorySlotUI[i].sprite = originalCards[i].cardData.cardIcon;
-            inventorySlotUI[i].enabled = true; 
-        }
-        else
-        {
-            inventorySlotUI[i].enabled = false; 
+            if (i < originalCards.Count)
+            {
+                inventorySlotUI[i].sprite = originalCards[i].cardData.cardIcon;
+                inventorySlotUI[i].enabled = true; 
+            }
+            else
+            {
+                inventorySlotUI[i].enabled = false; 
+            }
         }
     }
-}
 
     public void OnSlotClicked(int slotIndex)
     {
