@@ -89,33 +89,33 @@ public class CardSystem : MonoBehaviour
     }
 
     public void AddCard(CardData newCardData)
-    {
-        Debug.Log("Attempting to add card: " + newCardData.cardName);
+{
+    Debug.Log("Attempting to add card: " + newCardData.cardName);
 
-        if (cardSlots.Count < 5)
+    if (cardSlots.Count < 5)
+    {
+        Card newCard = new Card(newCardData);
+        cardSlots.Insert(0, newCard);
+        cardDataList.Insert(0, newCardData); 
+        originalCards.Insert(0, newCard);  
+        UpdateCardUI();
+        Debug.Log("Card added to slot. Total slots: " + cardSlots.Count);
+    }
+    else
+    {
+        if (ultimateCard == null)
         {
-            Card newCard = new Card(newCardData);
-            cardSlots.Insert(0, newCard);
-            cardDataList.Insert(0, newCardData); 
-            originalCards.Insert(0, newCard);  
-            UpdateCardUI();
-            Debug.Log("Card added to slot. Total slots: " + cardSlots.Count);
+            ultimateCard = new Card(newCardData);
+            ultimateCardData = newCardData;
+            UpdateUltimateCardUI();
+            Debug.Log("Ultimate card slot filled.");
         }
         else
         {
-            if (ultimateCard == null)
-            {
-                ultimateCard = new Card(newCardData);
-                ultimateCardData = newCardData;
-                UpdateUltimateCardUI();
-                Debug.Log("Ultimate card slot filled.");
-            }
-            else
-            {
-                Debug.Log("No available slots for new card.");
-            }
+            Debug.Log("No available slots for new card.");
         }
     }
+}
 
 
     private void ResetCards()
