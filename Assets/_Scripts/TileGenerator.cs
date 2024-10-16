@@ -15,7 +15,6 @@ public class TileGenerator : MonoBehaviour
 
     void Start()
     {
-        GenerateTilemap();
     }
 
     public void GenerateTilemap()
